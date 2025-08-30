@@ -9,19 +9,30 @@ const client = twilio(accountSid, authToken);
 
 async function sendSMS(to, message) {
   try {
-    const formattedPhone = to.startsWith('+') ? to : `+1${to}`;
+    // Handle Swedish numbers
+    let formattedPhone = to;
+    if (to.startsWith('07')) {
+      formattedPhone = '+46' + to.substring(1);
+    } else if (to.startsWith('0')) {
+      formattedPhone = '+46' + to.substring(1);
+    } else if (!to.startsWith('+')) {
+      formattedPhone = '+1' + to;
+    } else {
+      formattedPhone = to;
+    }
+    
+    console.log('Sending SMS to formatted number:', formattedPhone);
     
     const result = await client.messages.create({
       body: message,
-      from: twilioPhone,  // YOUR Twilio number
-      to: formattedPhone   // Customer's number
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: formattedPhone
     });
     
-    console.log('SMS sent:', result.sid);
+    console.log('SMS sent with SID:', result.sid);
     return result;
-    
   } catch (error) {
-    console.error('SMS error:', error);
+    console.error('SMS error details:', error);
     throw error;
   }
 }
