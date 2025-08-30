@@ -1,5 +1,5 @@
 // Test your API endpoints
-const baseURL = 'http://localhost:3000/api';
+const baseURL = 'https://dealership-backend-production.up.railway.app/api';
 
 async function testAPI() {
   console.log('🧪 Testing API endpoints...\n');
