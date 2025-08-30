@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../supabase_connect');
 const { sendSMS } = require('../services/twilio');
-const { sendSMS } = require('../services/twilio');
 
 // Get all leads
 router.get('/', async (req, res) => {
@@ -69,7 +68,7 @@ router.post('/capture', async (req, res) => {
         response_time_seconds: responseTime 
       })
       .eq('id', data.id);
-    // TODO: Add Twilio SMS here later
+
     // Send SMS notification
     if (
       process.env.TWILIO_AUTH_TOKEN &&
@@ -89,7 +88,6 @@ router.post('/capture', async (req, res) => {
       }
     } else {
       console.log('Missing Twilio environment variables, skipping SMS');
-    }
     }
 
     console.log(`Lead captured: ${data.first_name} ${data.last_name} - Response time: ${responseTime}s`);
