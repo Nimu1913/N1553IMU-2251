@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../supabase_connect');
 const { sendSMS } = require('../services/twilio');
+const { sendSMS } = require('../services/twilio');
 
 // Get all leads
 router.get('/', async (req, res) => {
@@ -68,8 +69,29 @@ router.post('/capture', async (req, res) => {
         response_time_seconds: responseTime 
       })
       .eq('id', data.id);
-
     // TODO: Add Twilio SMS here later
+    // Send SMS notification
+    if (
+      process.env.TWILIO_AUTH_TOKEN &&
+      process.env.TWILIO_ACCOUNT_SID &&
+      process.env.TWILIO_PHONE_NUMBER
+    ) {
+      try {
+        console.log('Attempting SMS to:', leadData.phone);
+        await sendSMS(
+          leadData.phone,
+          `Hi ${leadData.first_name}! Thanks for your interest. We'll call you shortly about your test drive.`
+        );
+        console.log('SMS sent successfully');
+      } catch (error) {
+        console.error('SMS failed:', error.message);
+        // Don't fail the whole request if SMS fails
+      }
+    } else {
+      console.log('Missing Twilio environment variables, skipping SMS');
+    }
+    }
+
     console.log(`Lead captured: ${data.first_name} ${data.last_name} - Response time: ${responseTime}s`);
 
     res.json({ 
@@ -99,7 +121,7 @@ router.get('/:id', async (req, res) => {
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Lead not found' });
-    
+
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
