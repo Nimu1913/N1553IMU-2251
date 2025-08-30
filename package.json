@@ -1,0 +1,20 @@
+{
+  "name": "dealership-tool",
+  "version": "1.0.0",
+  "description": "Automotive dealership lead management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.1",
+    "twilio": "^5.8.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
