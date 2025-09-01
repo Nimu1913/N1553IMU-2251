@@ -42,13 +42,17 @@ app.use((err, req, res, next) => {
 
 // Serve frontend for all non-API routes (in production)
 if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-  });
-} else {
+  app.use(express.static(path.join(__dirname, 'my-app', 'dist')));
+}
+else {
   // 404 handler for development
   app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
+  });
+}
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
   });
 }
 
