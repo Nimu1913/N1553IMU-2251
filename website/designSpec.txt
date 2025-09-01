@@ -1,0 +1,102 @@
+Build TestRide.io - Conversion-Focused Dealership Platform
+Context
+Design a high-converting marketing website for TestRide, a lead management platform that guarantees automotive dealerships respond to leads within 5 minutes. The backend works - now make dealers buy it.
+Core Message Hierarchy
+
+Hook: "You're losing $50K/month to slow lead response"
+Solution: "TestRide responds in under 5 minutes, guaranteed"
+Proof: "100x higher conversion when you respond fast"
+
+Design Directive
+Style: Clean, fast, trust-building. No clutter.
+Tone: Urgent but not pushy. ROI-obsessed. Every element drives toward demo booking.
+Performance: <3s load, mobile-first, instant comprehension.
+Homepage Structure (Priority Order)
+Hero - Make Them Feel the Pain
+
+Headline: "Your Competitors Respond in 5 Minutes. Do You?"
+Subhead: "TestRide guarantees instant response to every lead - or your money back"
+Live Counter: "Average dealer response time: 47 minutes | TestRide: 90 seconds"
+CTA: "See Your Lost Revenue" → ROI Calculator
+
+ROI Calculator - Show the Money
+
+Inputs: Your monthly leads, current response time
+Output: "You're losing $[X]/month in dead leads"
+CTA: "Fix This Now - Start Free 60-Day Pilot"
+
+Trust Bar
+
+"52 dealerships now responding 67x faster"
+Logos: CDK, Reynolds, Twilio
+"TCPA Compliant" badge
+
+Three Features Only
+
+Instant SMS - Every lead gets a text in <5 min
+Smart Routing - Right lead → Right salesperson
+Full Attribution - See which ads actually sell cars
+
+Pricing - Simple Choice Architecture
+
+Starter: $500/location - Just respond fast
+Pro: $1,000/location - Route + analytics
+Enterprise: Call us - White label + custom
+Banner: "No setup fees. No contracts. Cancel anytime."
+
+Final CTA Section
+
+Headline: "Every minute costs you money"
+Button: "Book 15-Min Demo"
+Microcopy: "See it work on YOUR leads"
+
+Other Pages (Keep Minimal)
+
+Demo: Calendly embed + 3 bullet points on what they'll see
+Proof: 3 case studies with hard numbers
+Login: Simple portal access
+
+What NOT to Build
+
+Long feature lists
+Technical architecture diagrams
+Multiple pricing pages
+Blog (yet)
+About us story
+
+Success Metrics
+Page converts if visitor either:
+
+Books demo (primary)
+Starts calculator (secondary)
+Signs up for pilot (win)
+
+Voice & Copy Rules
+
+Never say "revolutionize" or "transform"
+Always include specific numbers (5 minutes, 100x, $50K)
+Lead with loss, follow with gain
+Every headline answers: "So what?"
+
+Build Order
+
+Hero + Calculator (test conversion)
+Pricing + Demo booking
+Everything else
+
+Final Instruction: Make it feel like NOT using TestRide is costing them money every second they're on the site. Speed and trust win over features.
+
+Application
+css--primary-dark: #0A1628;      /* Headers, text */
+--primary-bright: #00D4FF;    /* Features, highlights */
+--neutral-dark: #1C1C1C;      /* Body text */
+--neutral-light: #E5E4E2;     /* Backgrounds */
+--action: #DC2626;            /* CTAs only */
+--success: #10B981;           /* Metrics, confirmation */
+Hero Example:
+
+Background: Gradient from navy to deep charcoal
+Headline: White
+Subhead: Platinum
+CTA Button: Performance red
+Accent graphics: Electric blue
