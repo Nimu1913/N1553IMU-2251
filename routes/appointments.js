@@ -23,7 +23,11 @@ router.get('/availability', async (req, res) => {
       slots 
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error getting availability:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 });
 
@@ -60,16 +64,23 @@ router.post('/book', async (req, res) => {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
     
     res.json({ 
       success: true, 
       message: 'Appointment booked successfully',
-      appointment: data 
+      data: data 
     });
     
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error booking appointment:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 });
 
@@ -89,10 +100,26 @@ router.get('/', async (req, res) => {
       `)
       .order('appointment_date', { ascending: true });
 
-    if (error) throw error;
-    res.json({ success: true, data });
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    
+    // IMPORTANT: Always return an array, even if empty
+    // This prevents the .filter() error on the frontend
+    res.json({ 
+      success: true, 
+      data: data || [] // Ensure data is always an array
+    });
+    
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error fetching appointments:', error);
+    // Even on error, return empty array to prevent frontend crashes
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      data: [] // Always include empty array on error
+    });
   }
 });
 
@@ -104,7 +131,9 @@ router.patch('/:id/status', async (req, res) => {
     
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ 
-        error: 'Invalid status' 
+        success: false,
+        error: 'Invalid status',
+        data: null
       });
     }
     
@@ -115,10 +144,24 @@ router.patch('/:id/status', async (req, res) => {
       .select()
       .single();
     
-    if (error) throw error;
-    res.json({ success: true, data });
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    
+    res.json({ 
+      success: true, 
+      data: data,
+      message: 'Status updated successfully'
+    });
+    
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error updating status:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      data: null
+    });
   }
 });
 
