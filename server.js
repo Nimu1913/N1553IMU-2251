@@ -6,8 +6,8 @@ require('dotenv').config();
 const app = express();
 
 // Import routes
-const leadRoutes = require('./routes/leads');
-const appointmentRoutes = require('./routes/appointments');
+const leadRoutes = require('./my-app/routes/leads');
+const appointmentRoutes = require('./my-app/routes/appointments');
 
 // Middleware
 app.use(cors());
