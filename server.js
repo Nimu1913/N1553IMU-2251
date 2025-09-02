@@ -6,20 +6,13 @@ require('dotenv').config();
 const app = express();
 
 // Import routes
-const authRoutes = require('./routes/auth');
 const leadRoutes = require('./routes/leads');
 const appointmentRoutes = require('./routes/appointments');
+const authRoutes = require('./routes/auth');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // serve widget.js
-app.use('/', require('./routes/booking'));
-
-// Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-}
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -30,7 +23,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Routes
+// API Routes (must come before static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -44,58 +37,24 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Serve frontend for all non-API routes (in production)
+// Serve frontend in production (only once, at the end)
 if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the built React app
   app.use(express.static(path.join(__dirname, 'my-app', 'dist')));
-}
-else {
+  
+  // Catch all handler - send React app for any route not handled above
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
+  });
+} else {
   // 404 handler for development
   app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
   });
 }
 
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
-  });
-
-  app.post('/api/appointments/book', async (req, res) => {
-    const { name, email, phone, vehicle, date, time } = req.body;
-
-    // Validate request data
-    if (!name || !email || !phone || !vehicle || !date || !time) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    const { data, error } = await supabase
-      .from('appointments')
-      .insert([{
-        customer_name: name,
-        customer_email: email,
-        customer_phone: phone,
-        vehicle_info: vehicle,
-        appointment_date: date,
-        appointment_time: time,
-        status: "booked",
-        source: "Widget"
-      }]);
-
-    if (error) {
-      console.error('Error booking appointment:', error);
-      return res.status(500).json({ error: 'Failed to book appointment' });
-    }
-
-    res.status(201).json({ message: 'Appointment booked successfully', appointment: data[0] });
-  });
-
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
-  });
-}
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
