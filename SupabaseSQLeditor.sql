@@ -1,3 +1,10 @@
+-- Enable RLS on the tables
+ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;  
+ALTER TABLE public.dealerships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
+
+
 -- Dealerships table
 CREATE TABLE IF NOT EXISTS dealerships (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -39,3 +46,14 @@ CREATE TABLE IF NOT EXISTS appointments (
 INSERT INTO dealerships (name, email, phone) 
 VALUES ('Test Dealership', 'test@dealership.com', '555-0100')
 ON CONFLICT DO NOTHING;
+
+
+-- Create policies that allow all operations (temporary - refine later)
+CREATE POLICY "Allow all operations on leads" ON public.leads
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow all operations on appointments" ON public.appointments
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow all operations on dealerships" ON public.dealerships
+  FOR ALL USING (true) WITH CHECK (true);
