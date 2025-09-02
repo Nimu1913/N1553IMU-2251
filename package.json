@@ -54,6 +54,7 @@
     "react-hook-form": "^7.55.0",
     "recharts": "^2.15.2",
     "tailwind-merge": "^2.6.0",
+    "twilio": "^5.8.2",
     "wouter": "^3.3.5",
     "zod": "^3.24.2"
   },
@@ -80,5 +81,4 @@
   "engines": {
     "node": ">=20.0.0"
   }
-
 }
