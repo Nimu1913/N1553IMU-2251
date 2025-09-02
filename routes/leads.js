@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../../supabase_connect');
+const supabase = require('../supabase_connect');
 const { sendSMS } = require('../services/twilio');
 
 // Get all leads

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../../supabase_connect');
+const supabase = require('../supabase_connect');
 
 // Get available time slots (simplified for MVP)
 router.get('/availability', async (req, res) => {
