@@ -28,6 +28,10 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
     { name: "Vehicles", href: "/vehicles", icon: Car, active: location === "/vehicles" },
     { name: "Deals", href: "/deals", icon: Handshake },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Marketing", href: "/marketing", icon: BarChart3 },
+    { name: "AI Studio", href: "/ai-studio", icon: BarChart3 },
+    { name: "Blocket", href: "/blocket", icon: BarChart3 },
+    { name: "Communications", href: "/communications", icon: BarChart3 },
   ];
 
   const secondaryNavigation = [

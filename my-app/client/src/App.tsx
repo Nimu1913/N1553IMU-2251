@@ -13,6 +13,28 @@ import Vehicles from "@/pages/vehicles";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
+import marketing from "./pages/marketing";
+import blocket from "./pages/blocket";
+import Communications from "./pages/communications";
+import AIStudio from "./pages/ai-studio";
+// Add other page imports as needed
+
+function App() {
+  return (
+    <Switch>
+      <Route path="/" component={Login} />
+      <Route path="/login" component={Login} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/appointments" component={Appointments} />
+      <Route path="/leads" component={Leads} />
+      <Route path="/vehicles" component={Vehicles} />
+      <Route path="/ai-studio" component={AIStudio} />
+      <Route path="/blocket" component={blocket} />
+      <Route path="/communications" component={Communications} />
+      {/* Add other routes like vehicles, ai-studio, blocket, etc. */}
+    </Switch>
+  );
+}
 
 function Router() {
   return (
@@ -43,8 +65,7 @@ function Router() {
     </Switch>
   );
 }
-
-function App() {
+function AuthRouter() {
   const { user, loading } = useAuth();
   const [location, setLocation] = useLocation();
 
