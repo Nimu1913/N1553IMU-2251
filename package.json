@@ -6,7 +6,6 @@
     "dev": "vite",
     "dev:backend": "tsx server/index.ts",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\"",
-    "postinstall": "cd my-app && npm install && npx vite build",
     "build": "cd my-app && npm install && npx vite build",
     "start": "npm run build && node server.js",
     "preview": "vite preview"
