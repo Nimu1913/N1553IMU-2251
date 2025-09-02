@@ -6,8 +6,8 @@
     "dev": "vite",
     "dev:backend": "tsx server/index.ts",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\"",
-    "build": "cd my-app && npm install && npm run build",
-    "start": "NODE_ENV=production node server.js",
+    "build": "cd my-app && npm install && npx vite build",
+    "start": "node server.js",
     "preview": "vite preview"
   },
   "dependencies": {
