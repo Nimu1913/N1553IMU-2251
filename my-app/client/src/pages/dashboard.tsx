@@ -1,7 +1,7 @@
 // my-app/client/src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
+import DashboardLayout from "@/components/dashboard/dashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, DollarSign, TrendingUp, UserPlus, QrCode, CalendarPlus } from "lucide-react";
