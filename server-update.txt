@@ -1,0 +1,8 @@
+// Add after your existing requires
+const bookingRoutes = require('./routes/booking');
+
+// Add after cors middleware
+app.use(express.static('public'));
+
+// Add with other routes
+app.use('/', bookingRoutes);
