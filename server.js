@@ -14,6 +14,14 @@ const authRoutes = require('./routes/auth');
 app.use(cors());
 app.use(express.json());
 
+// Disable caching for all API routes
+app.use('/api/*', (req, res, next) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -23,12 +31,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes (must come before static files)
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/appointments', appointmentRoutes);
 
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 
@@ -37,17 +45,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Serve frontend in production (only once, at the end)
+// Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files from the built React app
   app.use(express.static(path.join(__dirname, 'my-app', 'dist')));
   
-  // Catch all handler - send React app for any route not handled above
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
   });
 } else {
-  // 404 handler for development
   app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
   });

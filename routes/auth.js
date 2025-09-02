@@ -1,20 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../supabase_connect');
 
-// Mock auth for now (replace with real Supabase auth later)
+// Mock auth for now
+const mockUser = {
+  id: '1',
+  email: 'john@automax.com',
+  name: 'John Doe',
+  role: 'admin'
+};
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   
-  // For demo purposes - replace with real auth
   if (email === 'john@automax.com' && password === 'password') {
+    // Set no-cache headers
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({
       success: true,
-      user: { 
-        id: '1',
-        email: email,
-        name: 'John Doe'
-      },
+      user: mockUser,
       token: 'demo-token-' + Date.now()
     });
   } else {
@@ -26,14 +29,15 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', (req, res) => {
-  // Return mock user for now
-  res.json({
+  // IMPORTANT: Set headers to prevent caching
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
+  // Always return fresh data
+  res.status(200).json({
     success: true,
-    user: {
-      id: '1',
-      email: 'john@automax.com',
-      name: 'John Doe'
-    }
+    user: mockUser
   });
 });
 
