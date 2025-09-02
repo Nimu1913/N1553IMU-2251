@@ -1,6 +1,5 @@
-import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { Switch, Route, useLocation, Redirect } from "wouter";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -19,20 +18,24 @@ import Communications from "./pages/communications";
 import AIStudio from "./pages/ai-studio";
 // Add other page imports as needed
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <Switch>
-      <Route path="/" component={Login} />
-      <Route path="/login" component={Login} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/appointments" component={Appointments} />
-      <Route path="/leads" component={Leads} />
-      <Route path="/vehicles" component={Vehicles} />
-      <Route path="/ai-studio" component={AIStudio} />
-      <Route path="/blocket" component={blocket} />
-      <Route path="/communications" component={Communications} />
-      {/* Add other routes like vehicles, ai-studio, blocket, etc. */}
-    </Switch>
+    <QueryClientProvider client={queryClient}>
+      <Switch>
+        <Route path="/" component={Login} />
+        <Route path="/login" component={Login} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/appointments" component={Appointments} />
+        <Route path="/leads" component={Leads} />
+        <Route path="/vehicles" component={Vehicles} />
+        <Route path="/ai-studio" component={AIStudio} />
+        <Route path="/blocket" component={blocket} />
+        <Route path="/communications" component={Communications} />
+        {/* Add other routes like vehicles, ai-studio, blocket, etc. */}
+      </Switch>
+    </QueryClientProvider>
   );
 }
 
@@ -64,7 +67,7 @@ function Router() {
       <Route component={NotFound} />
     </Switch>
   );
-}
+
 function AuthRouter() {
   const { user, loading } = useAuth();
   const [location, setLocation] = useLocation();
@@ -100,6 +103,7 @@ function AuthRouter() {
       <Toaster />
     </>
   );
+}
 }
 
 export default App;
