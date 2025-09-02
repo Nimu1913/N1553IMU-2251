@@ -4,8 +4,17 @@ import { Car, Handshake, ArrowLeftRight, Phone, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 
+type Appointment = {
+  id: string;
+  customerName: string;
+  scheduledDate: string;
+  appointmentType: string;
+  vehicleInfo?: string;
+  status: string;
+};
+
 export function AppointmentsList() {
-  const { data: appointments = [], isLoading } = useQuery({
+  const { data: appointments = [], isLoading } = useQuery<Appointment[]>({
     queryKey: ["/api/appointments"],
   });
 

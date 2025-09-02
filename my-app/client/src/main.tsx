@@ -1,5 +1,15 @@
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./index.css";
+// my-app/client/src/main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+// Update this import to the correct path where AuthProvider is exported
+import { AuthProvider } from '@/hooks/use-auth';
+import './index.css';
 
-createRoot(document.getElementById("root")!).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </React.StrictMode>
+);
