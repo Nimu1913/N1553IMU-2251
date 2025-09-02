@@ -6,6 +6,7 @@ require('dotenv').config();
 const app = express();
 
 // Import routes
+const authRoutes = require('./routes/auth');
 const leadRoutes = require('./routes/leads');
 const appointmentRoutes = require('./routes/appointments');
 
@@ -28,6 +29,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/appointments', appointmentRoutes);
 
@@ -51,6 +53,10 @@ else {
   });
 }
 if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
+  });
+
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'my-app', 'dist', 'index.html'));
   });
