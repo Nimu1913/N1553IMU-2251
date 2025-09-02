@@ -106,4 +106,19 @@
   .pulse-animation {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+  /* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better focus states */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Smoother animations globally */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
 }
