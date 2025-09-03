@@ -10,7 +10,7 @@ class VehicleSegmenter:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
     
-    def segment_vehicle(self, image_path, confidence_threshold=0.5):
+    def segment_vehicle(self, image_path, confidence_threshold=0.25):
         try:
             results = self.model(image_path, conf=confidence_threshold)
             
