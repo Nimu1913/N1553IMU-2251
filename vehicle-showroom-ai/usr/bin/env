@@ -1,0 +1,299 @@
+#!/usr/bin/env python3
+import cv2
+import numpy as np
+from scipy import ndimage
+
+class ProfessionalReplacer:
+    def replace_background_professional(self, original_img, mask, background_img):
+        try:
+            print("🎨 Starting professional background replacement...")
+            
+            # Get dimensions
+            h, w = original_img.shape[:2]
+            bg_h, bg_w = background_img.shape[:2]
+            
+            # Resize mask to match original
+            if mask.shape != (h, w):
+                mask = cv2.resize(mask, (w, h))
+            
+            # Ensure mask is normalized
+            if len(mask.shape) == 3:
+                mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+            mask = mask.astype(np.float32)
+            if mask.max() > 1.0:
+                mask = mask / 255.0
+            
+            # Improve mask quality first
+            refined_mask = self.refine_mask_professional(mask)
+                
+            # Find car bounding box for positioning
+            car_coords = np.where(refined_mask > 0.1)
+            if len(car_coords[0]) > 0:
+                y_min, y_max = car_coords[0].min(), car_coords[0].max()
+                x_min, x_max = car_coords[1].min(), car_coords[1].max()
+                car_height = y_max - y_min
+                car_width = x_max - x_min
+                
+                # Smart scaling for showroom presentation
+                scale_factor = min(bg_w / (car_width * 1.4), bg_h / (car_height * 1.6))
+                new_w = int(w * scale_factor)
+                new_h = int(h * scale_factor)
+                
+                # Resize components
+                original_resized = cv2.resize(original_img, (new_w, new_h))
+                mask_resized = cv2.resize(refined_mask, (new_w, new_h))
+                
+                # Position car (slightly off-center for more dynamic look)
+                start_x = int((bg_w - new_w) * 0.45)  # Slightly left of center
+                start_y = bg_h - new_h - int(bg_h * 0.15)  # 15% from bottom
+                
+                # Ensure bounds
+                start_x = max(0, min(start_x, bg_w - new_w))
+                start_y = max(0, min(start_y, bg_h - new_h))
+                
+                # Step 1: Color and lighting correction
+                corrected_car = self.match_lighting_professional(
+                    original_resized, background_img, mask_resized
+                )
+                
+                # Step 2: Create shadow
+                result = background_img.copy()
+                result = self.add_realistic_shadow(
+                    result, mask_resized, start_x, start_y, new_w, new_h
+                )
+                
+                # Step 3: Advanced blending with feathered edges
+                result = self.blend_with_feathering(
+                    result, corrected_car, mask_resized, start_x, start_y
+                )
+                
+                # Step 4: Add subtle reflection if floor looks reflective
+                if self.detect_reflective_floor(background_img):
+                    result = self.add_floor_reflection(
+                        result, corrected_car, mask_resized, start_x, start_y, new_w, new_h
+                    )
+                
+                print(f"✅ Professional placement complete!")
+                return result
+                
+            return background_img
+            
+        except Exception as e:
+            print(f"❌ Error in professional replacement: {str(e)}")
+            return background_img
+    
+    def refine_mask_professional(self, mask):
+        """Advanced mask refinement with edge enhancement"""
+        # Convert to binary
+        binary_mask = (mask > 0.3).astype(np.uint8)
+        
+        # Remove noise and fill holes
+        kernel_small = np.ones((2, 2), np.uint8)
+        kernel_large = np.ones((4, 4), np.uint8)
+        
+        # Morphological operations
+        cleaned = cv2.morphologyEx(binary_mask, cv2.MORPH_OPEN, kernel_small)
+        filled = cv2.morphologyEx(cleaned, cv2.MORPH_CLOSE, kernel_large)
+        
+        # Edge-preserving smoothing
+        smoothed = cv2.bilateralFilter(filled, 9, 75, 75)
+        
+        # Convert back to float and add gradient feathering
+        smooth_float = smoothed.astype(np.float32) / 255.0
+        
+        # Create distance-based feathering
+        distance = cv2.distanceTransform(filled, cv2.DIST_L2, 5)
+        feather_mask = np.clip(distance / 8.0, 0, 1)  # Feather 8 pixels
+        
+        # Combine original mask with feathering
+        final_mask = smooth_float * feather_mask
+        
+        return np.clip(final_mask, 0, 1)
+    
+    def match_lighting_professional(self, car_img, background_img, mask):
+        """Advanced lighting and color matching"""
+        try:
+            # Convert to LAB color space for better color manipulation
+            car_lab = cv2.cvtColor(car_img, cv2.COLOR_BGR2LAB)
+            bg_lab = cv2.cvtColor(background_img, cv2.COLOR_BGR2LAB)
+            
+            # Sample background lighting (avoid pure white areas)
+            bg_mask = cv2.cvtColor(background_img, cv2.COLOR_BGR2GRAY) < 240
+            bg_mean_l = np.mean(bg_lab[bg_mask, 0]) if np.any(bg_mask) else 128
+            bg_mean_a = np.mean(bg_lab[bg_mask, 1]) if np.any(bg_mask) else 128  
+            bg_mean_b = np.mean(bg_lab[bg_mask, 2]) if np.any(bg_mask) else 128
+            
+            # Get car's current lighting in masked areas
+            car_mask_bool = mask > 0.5
+            if np.any(car_mask_bool):
+                car_mean_l = np.mean(car_lab[car_mask_bool, 0])
+                
+                # Adjust lightness more subtly
+                lighting_diff = (bg_mean_l - car_mean_l) * 0.3
+                car_lab[:, :, 0] = np.clip(car_lab[:, :, 0] + lighting_diff, 0, 255)
+                
+                # Slight color temperature adjustment
+                car_lab[:, :, 1] = np.clip(car_lab[:, :, 1] + (bg_mean_a - 128) * 0.1, 0, 255)
+                car_lab[:, :, 2] = np.clip(car_lab[:, :, 2] + (bg_mean_b - 128) * 0.1, 0, 255)
+            
+            return cv2.cvtColor(car_lab, cv2.COLOR_LAB2BGR)
+            
+        except Exception as e:
+            print(f"Warning: Lighting adjustment failed: {e}")
+            return car_img
+    
+    def add_realistic_shadow(self, background, mask, start_x, start_y, car_w, car_h):
+        """Add realistic drop shadow beneath the car"""
+        try:
+            # Create shadow mask from car silhouette
+            shadow_mask = (mask > 0.3).astype(np.float32)
+            
+            # Transform shadow (perspective + offset)
+            shadow_height = int(car_h * 0.3)  # Shadow extends 30% of car height
+            shadow_offset_x = int(car_w * 0.1)  # Slight horizontal offset
+            shadow_offset_y = int(car_h * 0.8)  # Start from bottom of car
+            
+            # Create perspective transform for shadow
+            src_pts = np.float32([[0, car_h*0.7], [car_w, car_h*0.7], 
+                                 [car_w, car_h], [0, car_h]])
+            dst_pts = np.float32([[shadow_offset_x, car_h + shadow_offset_y], 
+                                 [car_w + shadow_offset_x, car_h + shadow_offset_y],
+                                 [car_w * 0.9, car_h + shadow_offset_y + shadow_height], 
+                                 [car_w * 0.1, car_h + shadow_offset_y + shadow_height]])
+            
+            transform = cv2.getPerspectiveTransform(src_pts, dst_pts)
+            
+            # Transform shadow mask
+            shadow_transformed = cv2.warpPerspective(
+                shadow_mask, transform, (car_w, car_h + shadow_height + shadow_offset_y)
+            )
+            
+            # Blur shadow for realism
+            shadow_blurred = cv2.GaussianBlur(shadow_transformed, (15, 15), 0)
+            shadow_blurred *= 0.4  # Shadow opacity
+            
+            # Apply shadow to background
+            shadow_start_x = start_x
+            shadow_start_y = start_y
+            shadow_h, shadow_w = shadow_blurred.shape
+            
+            # Ensure shadow doesn't go out of bounds
+            if (shadow_start_y + shadow_h <= background.shape[0] and 
+                shadow_start_x + shadow_w <= background.shape[1]):
+                
+                for c in range(3):  # Apply to all color channels
+                    bg_region = background[shadow_start_y:shadow_start_y+shadow_h, 
+                                         shadow_start_x:shadow_start_x+shadow_w, c]
+                    bg_region = bg_region.astype(np.float32)
+                    bg_region *= (1 - shadow_blurred)
+                    background[shadow_start_y:shadow_start_y+shadow_h, 
+                             shadow_start_x:shadow_start_x+shadow_w, c] = bg_region
+                
+                print("✅ Realistic shadow added")
+            
+            return background
+            
+        except Exception as e:
+            print(f"Warning: Shadow creation failed: {e}")
+            return background
+    
+    def blend_with_feathering(self, background, car_img, mask, start_x, start_y):
+        """Advanced blending with edge feathering"""
+        try:
+            end_y = start_y + car_img.shape[0]
+            end_x = start_x + car_img.shape[1]
+            
+            # Ensure we don't exceed background bounds
+            if end_y > background.shape[0] or end_x > background.shape[1]:
+                return background
+            
+            # Create feathered mask with distance-based falloff
+            mask_feathered = cv2.GaussianBlur(mask, (7, 7), 0)
+            
+            # Apply additional edge smoothing
+            mask_feathered = np.power(mask_feathered, 1.2)  # Stronger falloff
+            
+            # 3-channel mask for blending
+            mask_3ch = np.stack([mask_feathered] * 3, axis=-1)
+            
+            # High-quality blending
+            car_float = car_img.astype(np.float32)
+            bg_region = background[start_y:end_y, start_x:end_x].astype(np.float32)
+            
+            # Advanced blending with edge enhancement
+            blended = car_float * mask_3ch + bg_region * (1 - mask_3ch)
+            
+            # Apply slight edge sharpening where mask is strong
+            strong_mask = mask_feathered > 0.8
+            if np.any(strong_mask):
+                kernel = np.array([[-0.1, -0.1, -0.1],
+                                  [-0.1,  1.8, -0.1],
+                                  [-0.1, -0.1, -0.1]])
+                for c in range(3):
+                    channel = blended[:, :, c]
+                    sharpened = cv2.filter2D(channel, -1, kernel)
+                    blended[:, :, c] = np.where(
+                        strong_mask, 
+                        channel * 0.9 + sharpened * 0.1, 
+                        channel
+                    )
+            
+            background[start_y:end_y, start_x:end_x] = np.clip(blended, 0, 255).astype(np.uint8)
+            print("✅ Advanced blending complete")
+            
+            return background
+            
+        except Exception as e:
+            print(f"Warning: Advanced blending failed: {e}")
+            return background
+    
+    def detect_reflective_floor(self, background):
+        """Simple heuristic to detect if floor might be reflective"""
+        # Check if lower portion has high brightness (indicating reflective surface)
+        lower_third = background[int(background.shape[0] * 0.7):, :]
+        avg_brightness = np.mean(cv2.cvtColor(lower_third, cv2.COLOR_BGR2GRAY))
+        return avg_brightness > 180  # Bright floor suggests reflection
+    
+    def add_floor_reflection(self, background, car_img, mask, start_x, start_y, car_w, car_h):
+        """Add subtle floor reflection"""
+        try:
+            if start_y + car_h * 1.3 > background.shape[0]:
+                return background  # Not enough space for reflection
+            
+            # Create flipped car for reflection
+            car_flipped = cv2.flip(car_img, 0)  # Flip vertically
+            mask_flipped = cv2.flip(mask, 0)
+            
+            # Make reflection darker and more transparent
+            car_flipped = (car_flipped.astype(np.float32) * 0.3).astype(np.uint8)
+            mask_flipped = mask_flipped * 0.4  # More transparent
+            
+            # Fade reflection with distance
+            fade_gradient = np.linspace(1, 0, car_flipped.shape[0])
+            for i in range(car_flipped.shape[0]):
+                mask_flipped[i, :] *= fade_gradient[i]
+            
+            # Position reflection below car
+            reflection_start_y = start_y + car_h + 5
+            reflection_end_y = reflection_start_y + car_h
+            
+            if reflection_end_y <= background.shape[0]:
+                mask_3ch = np.stack([mask_flipped] * 3, axis=-1)
+                
+                bg_region = background[reflection_start_y:reflection_end_y, 
+                                     start_x:start_x+car_w].astype(np.float32)
+                car_region = car_flipped.astype(np.float32)
+                
+                blended_reflection = (car_region * mask_3ch + 
+                                    bg_region * (1 - mask_3ch))
+                
+                background[reflection_start_y:reflection_end_y, 
+                          start_x:start_x+car_w] = blended_reflection.astype(np.uint8)
+                
+                print("✅ Floor reflection added")
+            
+            return background
+            
+        except Exception as e:
+            print(f"Warning: Reflection creation failed: {e}")
+            return background
