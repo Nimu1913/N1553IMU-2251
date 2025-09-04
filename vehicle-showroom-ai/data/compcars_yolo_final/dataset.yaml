@@ -1,0 +1,13 @@
+# CompCars dataset for vehicle segmentation
+path: /Users/nicholasmuradov/Downloads/dealership-backend/dealership-backend/vehicle-showroom-ai/data/compcars_yolo_final
+train: images/train
+val: images/val
+
+# Classes
+nc: 1  # number of classes
+names: ['vehicle']  # class names
+
+# Training parameters (optional)
+# batch: 16
+# imgsz: 640
+# epochs: 100

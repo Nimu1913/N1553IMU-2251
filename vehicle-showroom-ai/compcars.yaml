@@ -1,0 +1,7 @@
+
+path: ./data/compcars_yolo
+train: images/train
+val: images/val
+
+nc: 1  # number of classes
+names: ['vehicle']  # class names
