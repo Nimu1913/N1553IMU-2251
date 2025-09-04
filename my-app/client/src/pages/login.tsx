@@ -1,26 +1,47 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Car, Calendar, TrendingUp, Users, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [terminalText, setTerminalText] = useState("");
   const { login, user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  const fullText = "TESTRIDE.IO_SYSTEM_V2.4.1_INITIALIZED";
 
   // Redirect if already logged in
   if (user) {
     setLocation("/dashboard");
     return null;
   }
+
+  // Terminal typing effect
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index <= fullText.length) {
+        setTerminalText(fullText.slice(0, index));
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update clock
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,202 +53,274 @@ export default function Login() {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
+        title: "AUTH_ERROR",
+        description: error instanceof Error ? error.message : "SYSTEM_FAILURE",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Animated stars background
-  useEffect(() => {
-    const stars = document.querySelectorAll('.star');
-    stars.forEach((star: any) => {
-      star.style.animationDelay = `${Math.random() * 5}s`;
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
     });
-  }, []);
+  };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Animated starfield background */}
-      <div className="absolute inset-0">
-        {[...Array(50)].map((_, i) => (
-          <div
-            key={i}
-            className="star absolute w-1 h-1 bg-white rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDuration: `${3 + Math.random() * 4}s`,
-            }}
-          />
-        ))}
+    <div className="min-h-screen bg-black text-white font-mono relative overflow-hidden">
+      {/* Scanlines effect */}
+      <div className="absolute inset-0 pointer-events-none opacity-10">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px)',
+          backgroundSize: '100% 4px',
+        }} />
       </div>
 
-      {/* Gradient orbs */}
-      <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-      <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-      <div className="absolute bottom-1/4 left-1/2 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
+      {/* Grid overlay */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="h-full w-full" style={{
+          backgroundImage: 'linear-gradient(rgba(0, 255, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.02) 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+        }} />
+      </div>
 
-      <div className="flex min-h-screen relative z-10">
-        {/* Left Panel - Marketing */}
-        <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between backdrop-blur-sm">
-          <div>
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-6 transition-transform">
-                <Car className="w-7 h-7 text-white" />
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="border-b border-white/20 p-4 md:p-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 animate-pulse" />
+                <span className="text-xs text-green-500 uppercase tracking-widest">SYSTEM_ONLINE</span>
               </div>
+              <div className="hidden md:block text-xs text-gray-500">
+                [{terminalText}]
+              </div>
+            </div>
+            <div className="text-xs text-gray-500 tabular-nums">
+              {formatTime(currentTime)}
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 flex">
+          {/* Left Panel - System Info */}
+          <div className="hidden lg:flex lg:w-1/2 border-r border-white/20">
+            <div className="flex-1 p-8 lg:p-16 flex flex-col justify-between">
+              {/* Logo and title */}
               <div>
-                <h1 className="text-4xl font-bold text-white">TestRide.io</h1>
-                <div className="flex items-center space-x-2 mt-1">
-                  <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />
-                  <p className="text-blue-200">The #1 scheduling platform for car salespeople</p>
+                <div className="mb-12">
+                  <h1 className="text-5xl md:text-6xl font-bold tracking-tighter leading-none">
+                    TESTRIDE.IO
+                  </h1>
+                  <div className="mt-2 text-xs text-gray-500 uppercase tracking-widest">
+                    AUTOMOTIVE_INTELLIGENCE_PLATFORM
+                  </div>
+                </div>
+
+                {/* ASCII Art Car */}
+                <div className="my-12 text-xs text-green-500 leading-none whitespace-pre font-mono">
+{`    ____
+ __/  |_\\_
+|  _     _``-.
+'-(_)---(_)--'`}
+                </div>
+
+                {/* System capabilities */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">&gt;</span>
+                      <span className="text-xs uppercase tracking-wider">LEAD_RESPONSE_TIME</span>
+                    </div>
+                    <div className="pl-4 text-2xl font-bold">00:05:00</div>
+                    <div className="pl-4 text-xs text-gray-500">GUARANTEED_MAXIMUM</div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">&gt;</span>
+                      <span className="text-xs uppercase tracking-wider">CONVERSION_DELTA</span>
+                    </div>
+                    <div className="pl-4 text-2xl font-bold">+67.3%</div>
+                    <div className="pl-4 text-xs text-gray-500">AVERAGE_IMPROVEMENT</div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-500">&gt;</span>
+                      <span className="text-xs uppercase tracking-wider">MONTHLY_REVENUE_GAIN</span>
+                    </div>
+                    <div className="pl-4 text-2xl font-bold">$127,000</div>
+                    <div className="pl-4 text-xs text-gray-500">PER_DEALERSHIP_AVERAGE</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* System status */}
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-2 border-t border-white/20">
+                  <span className="text-gray-500">NEURAL_NETWORK</span>
+                  <span className="text-green-500">OPERATIONAL</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-t border-white/20">
+                  <span className="text-gray-500">API_STATUS</span>
+                  <span className="text-green-500">CONNECTED</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-t border-white/20">
+                  <span className="text-gray-500">UPTIME</span>
+                  <span className="text-green-500">99.99%</span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div className="space-y-6">
-            <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-lg">Book More Test Drives</h3>
-                <p className="text-blue-200 mt-1">
-                  Convert walk-ins instantly with QR codes and quick booking
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-600 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-lg">Track Your Performance</h3>
-                <p className="text-blue-200 mt-1">
-                  See your conversion rates and commission projections in real-time
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-600 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-lg">Manage Leads Better</h3>
-                <p className="text-blue-200 mt-1">
-                  Never miss a follow-up with automated reminders and templates
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 backdrop-blur-md rounded-xl p-6 border border-white/20">
-            <p className="text-blue-200 text-sm">Trusted by top performers</p>
-            <p className="text-white text-2xl font-bold mt-2 bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent">
-              Average user sells 3 more cars per month
-            </p>
-          </div>
-        </div>
 
-        {/* Right Panel - Login Form */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl transform hover:scale-110 transition-transform">
-                <Car className="w-9 h-9 text-white" />
+          {/* Right Panel - Login */}
+          <div className="flex-1 flex items-center justify-center p-8 lg:p-16">
+            <div className="w-full max-w-md">
+              {/* Mobile header */}
+              <div className="lg:hidden mb-8">
+                <h1 className="text-3xl font-bold tracking-tighter">TESTRIDE.IO</h1>
+                <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">
+                  SYSTEM_ACCESS
+                </div>
               </div>
-              <h2 className="text-3xl font-bold text-white mb-2">Welcome back</h2>
-              <p className="text-gray-300">
-                Sign in to manage your appointments and leads
-              </p>
-            </div>
 
-            <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl">
-              <CardHeader>
-                <CardTitle className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Sign In</CardTitle>
-                <CardDescription>
-                  Use your credentials to access your dashboard
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-8">
+                {/* Terminal prompt */}
+                <div className="space-y-2">
+                  <div className="text-xs text-gray-500 uppercase tracking-widest">
+                    AUTHENTICATION_REQUIRED
+                  </div>
+                  <div className="text-xs text-green-500">
+                    &gt; ENTER_CREDENTIALS_TO_PROCEED_
+                  </div>
+                </div>
+
+                {/* Login form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="john@automax.com"
-                      required
-                      data-testid="input-email"
-                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500/20"
-                    />
+                    <label htmlFor="email" className="text-xs uppercase tracking-widest text-gray-500">
+                      EMAIL_ADDRESS
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 text-sm">
+                        &gt;
+                      </span>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="john@automax.com"
+                        required
+                        className="w-full h-12 pl-8 pr-4 bg-black border border-white/20 text-white placeholder:text-gray-600 focus:border-green-500 focus:outline-none transition-colors font-mono text-sm"
+                        autoComplete="email"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      required
-                      data-testid="input-password"
-                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500/20"
-                    />
+                    <label htmlFor="password" className="text-xs uppercase tracking-widest text-gray-500">
+                      PASSWORD
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 text-sm">
+                        &gt;
+                      </span>
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        className="w-full h-12 pl-8 pr-4 bg-black border border-white/20 text-white placeholder:text-gray-600 focus:border-green-500 focus:outline-none transition-colors font-mono text-sm"
+                        autoComplete="current-password"
+                      />
+                    </div>
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transform hover:scale-[1.02] transition-all" 
+                  <button
+                    type="submit"
                     disabled={loading}
-                    data-testid="button-login"
+                    className="w-full h-12 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-green-500 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 relative overflow-hidden group"
                   >
-                    {loading ? "Signing in..." : "Sign In"}
-                  </Button>
+                    <span className="relative z-10">
+                      {loading ? (
+                        <span className="flex items-center justify-center">
+                          <span className="animate-pulse">AUTHENTICATING...</span>
+                        </span>
+                      ) : (
+                        'EXECUTE_LOGIN_SEQUENCE'
+                      )}
+                    </span>
+                    <div className="absolute inset-0 bg-green-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+                  </button>
                 </form>
 
-                <div className="mt-6 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-purple-200">
-                  <p className="text-sm text-center text-gray-600">
-                    Demo credentials: john@automax.com / password
-                  </p>
+                {/* Demo credentials */}
+                <div className="space-y-2 pt-4 border-t border-white/20">
+                  <div className="text-xs text-gray-500 uppercase tracking-widest">
+                    DEMO_ACCESS_CREDENTIALS
+                  </div>
+                  <div className="text-xs text-gray-400 font-mono">
+                    <div>&gt; EMAIL: john@automax.com</div>
+                    <div>&gt; PASS: password</div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* System messages */}
+                <div className="space-y-1 text-xs text-gray-600">
+                  <div>[SYSTEM] Connection secured via TLS 1.3</div>
+                  <div>[SYSTEM] Location: Stockholm, SE</div>
+                  <div>[SYSTEM] Session timeout: 30:00</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="border-t border-white/20 p-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center space-x-4">
+              <span>© 2025 TESTRIDE.IO</span>
+              <span className="hidden md:inline">|</span>
+              <span className="hidden md:inline">BUILD_2.4.1</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span>GDPR_COMPLIANT</span>
+              <span>|</span>
+              <span>SOC2_CERTIFIED</span>
+            </div>
+          </div>
+        </footer>
       </div>
 
+      {/* Flicker effect */}
       <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
+        @keyframes flicker {
+          0% { opacity: 0.98; }
+          5% { opacity: 0.95; }
+          10% { opacity: 0.98; }
+          15% { opacity: 0.96; }
+          20% { opacity: 0.98; }
+          25% { opacity: 0.95; }
+          30% { opacity: 0.98; }
+          35% { opacity: 0.97; }
+          40% { opacity: 0.98; }
+          45% { opacity: 0.96; }
+          50% { opacity: 0.98; }
+          100% { opacity: 0.98; }
         }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
+        
+        body {
+          animation: flicker 10s infinite;
         }
       `}</style>
     </div>
