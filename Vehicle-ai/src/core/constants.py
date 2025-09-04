@@ -1,0 +1,5 @@
+SUPPORTED_IMAGE_FORMATS = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff']
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+MIN_IMAGE_SIZE = 256
+MAX_IMAGE_SIZE = 4096
+DEFAULT_QUALITY = 95

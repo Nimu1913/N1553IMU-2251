@@ -1,0 +1,31 @@
+pipeline:
+  stages:
+    - name: preprocessing
+      enabled: true
+      timeout: 10
+    - name: segmentation
+      enabled: true
+      timeout: 30
+    - name: generation
+      enabled: true
+      timeout: 60
+    - name: shadow
+      enabled: true
+      timeout: 20
+    - name: harmonization
+      enabled: true
+      timeout: 20
+    - name: postprocessing
+      enabled: true
+      timeout: 10
+
+quality_presets:
+  low:
+    max_size: 1024
+    inference_steps: 25
+  medium:
+    max_size: 1536
+    inference_steps: 35
+  high:
+    max_size: 2048
+    inference_steps: 50

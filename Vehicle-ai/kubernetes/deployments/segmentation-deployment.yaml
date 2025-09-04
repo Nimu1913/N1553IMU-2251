@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: segmentation
+  namespace: vehicle-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: segmentation
+  template:
+    metadata:
+      labels:
+        app: segmentation
+    spec:
+      containers:
+      - name: segmentation
+        image: vehicle-ai/segmentation:latest
+        resources:
+          requests:
+            memory: "4Gi"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "8Gi"
+            nvidia.com/gpu: 1
