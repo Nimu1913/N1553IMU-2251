@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { LanguageProvider } from "@/contexts/language-context";
 import { MetricsProvider } from "@/contexts/metrics-context";
 import { ThemeProvider } from "@/contexts/theme-context";
+import { AccountProvider } from "@/contexts/account-context";
 import SimpleLoginPage from "@/pages/simple-login";
 import SimpleDashboard from "@/pages/simple-dashboard";
 import VehiclesPage from "@/pages/vehicles-page";
@@ -55,8 +56,10 @@ function App() {
           <LanguageProvider>
             <MetricsProvider>
               <AuthProvider>
-                <Router />
-                <Toaster />
+                <AccountProvider>
+                  <Router />
+                  <Toaster />
+                </AccountProvider>
               </AuthProvider>
             </MetricsProvider>
           </LanguageProvider>

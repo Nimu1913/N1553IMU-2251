@@ -3,45 +3,88 @@ import { pgTable, text, varchar, timestamp, integer, decimal, boolean } from "dr
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Dealer Networks table
+export const dealerNetworks = pgTable("dealer_networks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  type: text("type").notNull(), // 'corporate', 'franchise', 'independent'
+  headquarters: text("headquarters"),
+  established: integer("established"),
+  totalDealerships: integer("total_dealerships").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Dealers table
+export const dealers = pgTable("dealers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  networkId: varchar("network_id").references(() => dealerNetworks.id),
+  type: text("type").notNull(), // 'network', 'independent'
+  city: text("city").notNull(),
+  region: text("region"),
+  country: text("country").default("Sweden"),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
+  website: text("website"),
+  established: integer("established"),
+  employeeCount: integer("employee_count").default(1),
+  monthlyRevenue: decimal("monthly_revenue"),
+  status: text("status").default("active"), // 'active', 'inactive', 'suspended'
+  plan: text("plan").default("basic"), // 'basic', 'pro', 'enterprise'
+  specializations: text("specializations").array(),
+  brands: text("brands").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dealerId: varchar("dealer_id").references(() => dealers.id).notNull(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
-  dealership: text("dealership"),
   phone: text("phone"),
-  role: text("role").default("salesperson"),
+  role: text("role").default("sales_rep"), // 'owner', 'manager', 'sales_rep', 'admin'
+  joinDate: timestamp("join_date").defaultNow(),
+  status: text("status").default("active"), // 'active', 'inactive'
+  performanceData: text("performance_data"), // JSON field for sales metrics
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const appointments = pgTable("appointments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dealerId: varchar("dealer_id").references(() => dealers.id).notNull(),
   userId: varchar("user_id").references(() => users.id).notNull(),
+  leadId: varchar("lead_id").references(() => leads.id),
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone").notNull(),
   customerEmail: text("customer_email"),
   appointmentType: text("appointment_type").notNull(), // test_drive, sales_meeting, trade_in, service
-  vehicleVIN: text("vehicle_vin"),
+  vehicleId: varchar("vehicle_id").references(() => vehicles.id),
   vehicleInfo: text("vehicle_info"),
   scheduledDate: timestamp("scheduled_date").notNull(),
   duration: integer("duration").default(60), // minutes
-  status: text("status").default("scheduled"), // scheduled, confirmed, completed, cancelled
+  status: text("status").default("scheduled"), // scheduled, confirmed, completed, cancelled, no_show
   notes: text("notes"),
   leadSource: text("lead_source"),
+  customerRating: integer("customer_rating"), // 1-5 stars after completion
+  customerFeedback: text("customer_feedback"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const leads = pgTable("leads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dealerId: varchar("dealer_id").references(() => dealers.id).notNull(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone"),
   customerEmail: text("customer_email"),
-  leadSource: text("lead_source").notNull(), // online, phone, walk_in, referral
+  leadSource: text("lead_source").notNull(), // online, phone, walk_in, referral, blocket, facebook, instagram
   leadStatus: text("lead_status").default("new"), // new, contacted, qualified, hot, warm, cold, converted, lost
-  interestedVehicle: text("interested_vehicle"),
+  interestedVehicle: varchar("interested_vehicle").references(() => vehicles.id),
   budget: decimal("budget"),
+  priority: text("priority").default("medium"), // low, medium, high, urgent
   notes: text("notes"),
   lastContactDate: timestamp("last_contact_date"),
   followUpDate: timestamp("follow_up_date"),
@@ -51,6 +94,7 @@ export const leads = pgTable("leads", {
 
 export const vehicles = pgTable("vehicles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dealerId: varchar("dealer_id").references(() => dealers.id).notNull(),
   vin: text("vin").notNull().unique(),
   make: text("make").notNull(),
   model: text("model").notNull(),
@@ -59,15 +103,34 @@ export const vehicles = pgTable("vehicles", {
   color: text("color"),
   mileage: integer("mileage"),
   price: decimal("price"),
-  status: text("status").default("available"), // available, sold, reserved
+  condition: text("condition").default("used"), // 'new', 'used', 'certified'
+  status: text("status").default("available"), // 'available', 'sold', 'reserved', 'maintenance'
+  fuelType: text("fuel_type"), // 'gasoline', 'diesel', 'hybrid', 'electric'
+  transmission: text("transmission"), // 'manual', 'automatic'
+  features: text("features").array(),
+  description: text("description"),
+  images: text("images").array(),
   userId: varchar("user_id").references(() => users.id), // assigned salesperson
+  addedDate: timestamp("added_date").defaultNow(),
+  soldDate: timestamp("sold_date"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Insert schemas
+export const insertDealerNetworkSchema = createInsertSchema(dealerNetworks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDealerSchema = createInsertSchema(dealers).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
+  joinDate: true,
 });
 
 export const insertAppointmentSchema = createInsertSchema(appointments).omit({
@@ -83,6 +146,7 @@ export const insertLeadSchema = createInsertSchema(leads).omit({
 export const insertVehicleSchema = createInsertSchema(vehicles).omit({
   id: true,
   createdAt: true,
+  addedDate: true,
 });
 
 // Login schema
@@ -92,6 +156,10 @@ export const loginSchema = z.object({
 });
 
 // Types
+export type InsertDealerNetwork = z.infer<typeof insertDealerNetworkSchema>;
+export type DealerNetwork = typeof dealerNetworks.$inferSelect;
+export type InsertDealer = z.infer<typeof insertDealerSchema>;
+export type Dealer = typeof dealers.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;

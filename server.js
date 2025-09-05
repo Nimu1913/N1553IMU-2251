@@ -9,9 +9,13 @@ const app = express();
 const leadRoutes = require('./routes/leads');
 const appointmentRoutes = require('./routes/appointments');
 const authRoutes = require('./routes/auth'); // ADD THIS LINE
+const dealerRoutes = require('./routes/dealers');
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve frontend in production
@@ -30,6 +34,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes); // ADD THIS LINE
+app.use('/api/dealers', dealerRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/appointments', appointmentRoutes);
 

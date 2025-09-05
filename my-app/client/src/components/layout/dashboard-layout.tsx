@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useLanguage } from "@/contexts/language-context";
 import { useTheme } from "@/contexts/theme-context";
+import { useAccount } from "@/contexts/account-context";
 import { useLocation } from "wouter";
 import { Menu, BarChart3, Calendar, Users, Car, Brain, MapPin, TrendingUp, MessageSquare, DollarSign, Settings, Phone, Moon, Sun } from "lucide-react";
+import AccountSelector from "@/components/account/AccountSelector";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { currentAccount, isManagerView } = useAccount();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -144,7 +147,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Main Content */}
         <main className="flex-1 lg:ml-0">
           {/* Modern Glassmorphism Header */}
-          <header className="backdrop-blur-xl bg-white/10 border-b border-white/20 p-4 lg:p-6">
+          <header className="backdrop-blur-xl bg-white/10 border-b border-white/20 p-4 lg:p-6 relative z-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button
@@ -168,6 +171,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 >
                   {isDarkMode ? <Sun size={20} className="text-white" /> : <Moon size={20} className="text-white" />}
                 </button>
+                
+                {/* Account Selector */}
+                <AccountSelector />
+                
                 <div className="h-8 w-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-white">
                     {user?.name?.charAt(0) || 'J'}

@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useLanguage } from "@/contexts/language-context";
 import { useMetrics } from "@/contexts/metrics-context";
+import { useAccount } from "@/contexts/account-context";
 import { useLocation } from "wouter";
-import { Menu, X, Activity, Users, Calendar, DollarSign, Car, MessageSquare, Settings, BarChart3, Brain, Zap, TrendingUp, Phone, MapPin, FileText } from "lucide-react";
+import { Menu, X, Activity, Users, Calendar, DollarSign, Car, MessageSquare, Settings, BarChart3, Brain, Zap, TrendingUp, Phone, MapPin, FileText, Maximize2 } from "lucide-react";
+import SalesAnalytics3D from "@/components/3d/SalesAnalytics3D";
+import ManagerOverview from "@/components/manager/ManagerOverview";
+import AccountSelector from "@/components/account/AccountSelector";
 
 export default function SimpleDashboard() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const { metrics, formatCurrency } = useMetrics();
+  const { currentAccount, isManagerView } = useAccount();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -177,7 +182,7 @@ export default function SimpleDashboard() {
         {/* Main Content */}
         <main className="flex-1">
           {/* Modern Glassmorphism Header */}
-          <header className="backdrop-blur-xl bg-white/10 border-b border-white/20 p-6">
+          <header className="backdrop-blur-xl bg-white/10 border-b border-white/20 p-6 relative z-50">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white">{t('dashboard.title')}</h1>
@@ -187,6 +192,10 @@ export default function SimpleDashboard() {
                 <div className="text-sm text-white/60">
                   {formatTime(currentTime)}
                 </div>
+                
+                {/* Account Selector */}
+                <AccountSelector />
+                
                 <div className="h-8 w-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-white">
                     {user?.name?.charAt(0) || 'J'}
@@ -204,9 +213,13 @@ export default function SimpleDashboard() {
 
           {/* Dashboard Content */}
           <div className="p-4 lg:p-6 space-y-6">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {stats.map((stat, index) => {
+            {isManagerView && currentAccount?.type === 'mother' ? (
+              <ManagerOverview />
+            ) : (
+              <React.Fragment>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                  {stats.map((stat, index) => {
                 const IconComponent = stat.icon;
                 return (
                   <div key={index} className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-xl p-4 lg:p-6 shadow-2xl hover:bg-white/15 transition-all">
@@ -257,26 +270,13 @@ export default function SimpleDashboard() {
 
               {/* Quick Stats & User Info */}
               <div className="space-y-6">
-                {/* Performance Chart Placeholder */}
+                {/* 3D Sales Analytics */}
                 <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-xl p-6 shadow-2xl">
-                  <h3 className="text-lg font-semibold text-white mb-4">Performance</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/70">Lead Conversion</span>
-                      <span className="text-sm font-medium text-white">24.8%</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{width: '75%'}}></div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/70">Monthly Target</span>
-                      <span className="text-sm font-medium text-white">$127K / $150K</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full" style={{width: '85%'}}></div>
-                    </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white">3D Sales Analytics</h3>
+                    <Maximize2 size={20} className="text-blue-400" />
                   </div>
+                  <SalesAnalytics3D className="h-[400px] w-full" />
                 </div>
 
                 {/* User Info Card */}
@@ -299,6 +299,8 @@ export default function SimpleDashboard() {
                 </div>
               </div>
             </div>
+            </React.Fragment>
+            )}
           </div>
         </main>
       </div>
